@@ -1,29 +1,25 @@
 #![feature(proc_macro_hygiene, decl_macro)]
-
+#[warn(deprecated)]
 #[macro_use]extern crate rocket;
 #[macro_use] extern crate rocket_contrib;
 #[macro_use] extern crate serde_derive;
 extern crate env_logger;
-extern crate rusqlite;
+pub extern crate rusqlite;
 extern crate serde_json;
-extern crate r2d2_sqlite;
-extern crate r2d2;
 
-
-use anyhow::Error;
-use r2d2::Pool;
-use rusqlite::{params, Connection, Result, types::ToSql, types::FromSql};
+use rocket_contrib::databases;
+use rusqlite::{Connection, MappedRows, Result, Row, types::FromSql, types::ToSql};
 use std::fs::File;
 use std::io::prelude::*;
 use serde::{Serialize, Deserialize};
-use rocket::{response::{Debug, content}, Rocket, State, routes};
-use rocket::request::FromRequest::from_request;
+use rocket::{Rocket, State, response::{Debug, content}, routes};
 use std::sync::Mutex;
 use rocket_contrib::json::Json;
-use r2d2_sqlite::SqliteConnectionManager;
 use std::marker::Sync;
 
-type DbConn = Mutex<Connection>;
+
+#[database("sqlite_logs")]
+struct LogsDbConn(rusqlite::Connection);
 
 #[derive(Debug,Serialize, Deserialize)]
 struct Movies {
@@ -48,6 +44,8 @@ struct Tv_series {
     imdb_rating: i32,
 }
 
+
+
 fn read_sql_from_file(path: &str) -> String {
     let mut file = File::open(path).unwrap();
     let mut contents = String::new();
@@ -57,31 +55,32 @@ fn read_sql_from_file(path: &str) -> String {
 }
 
 #[get("/movies")]
-fn get_movies(db_conn: State<DbConn>, conn: Connection) -> Json<Movies> {
+fn get_movies(conn: LogsDbConn) -> Json<Datas> {
 
-    let mut stmt = db_conn.prepare("SELECT * FROM Movies");
-    //let movies_iter = 
+    let mut stmt = conn.prepare("SELECT * FROM MOVIES").unwrap();
+    let movies_iter =  stmt.query_map( &[], |row| {
+        Ok(Movies {
+            movie_id:  row.get(0),
+            title: row.get(1),
+            genre: row.get(2),
+            imdb_rating: row.get(3)
+        })
+    }).unwrap();
 
-        db_conn.lock()
-            .expect("db connection lock")
-            .query_map("SELECT * FROM Movies", params![], |row| {
-                Ok(Movies {
-                    movie_id: row.get(0).unwrap(),
-                    title: row.get(1).unwrap(),
-                    genre: row.get(2).unwrap(),
-                    imdb_rating: row.get(3).unwrap(),
-                })
-            }).unwrap();
+    let mut db_datas = Vec::new();
 
-    let mut db_datas: Vec<Movies> = Vec::new();
     for data in movies_iter {
         db_datas.push(data.unwrap());
     }
+
+
+
+    Json(Datas {
+        all_movies: db_datas,
+    })
     
-    let movies_json = serde_json::to_string(&movies_iter).unwrap();
-    println!("{}", movies_json);
-    Json(movies_iter)
-        
+    //let movies_json = serde_json::to_string(&movies_iter).unwrap();
+    //println!("{}", movies_json);        
 }
 
 fn main() {
@@ -95,12 +94,12 @@ fn main() {
 
     let sql_file_content = read_sql_from_file("all.sql"); 
     println!("{}", sql_file_content);
-    
     db_conn.execute(   
-        sql_file_content.as_str(), params![]
+        sql_file_content.as_str(), &[]
     ).expect("No table found");
 
     rocket::ignite()
+        .attach(LogsDbConn::fairing())
         //.manage(Mutex::new(db_conn))
         .mount("/api", routes![get_movies])
         .launch();
