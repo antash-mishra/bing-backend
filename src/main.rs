@@ -18,19 +18,20 @@ use r2d2::{Pool, PooledConnection};
 use rocket::fairing::AdHoc;
 use rocket::{
     response::{content, Debug},
-    routes, Rocket, State,
+    routes, Rocket, State, post,
+    data::{FromData, FromDataSimple},
 };
 use rocket_contrib::databases;
 use rocket_contrib::json::Json;
 use rocket_contrib::serve::StaticFiles;
 use rusqlite::{types::FromSql, types::ToSql, Connection, MappedRows, Result, Row};
-use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::prelude::*;
 use std::marker::Sync;
 use std::sync::Mutex;
 use std::sync::RwLock;
-
+use serde::Serialize;
+use serde::de::{self, Deserialize, Deserializer, Visitor, SeqAccess, MapAccess};
 #[database("SqliteDbConn")]
 struct SqliteDbConn(Connection);
 
@@ -44,6 +45,22 @@ struct Movies {
 #[derive(Debug, Serialize, Deserialize)]
 struct Datas {
     all_movies: Vec<Movies>,
+}
+
+impl Datas {
+    pub fn add_movies(new: &Datas, conn: &Connection) -> Result<()> {
+
+        for j in &new.all_movies {
+            conn.execute("INSERT OR REPLACE INTO Movies(title, genre, imdb_rating) values(?1, ?2, ?3)", 
+            &[&j.title, &j.genre, &j.imdb_rating],
+            )?;
+        }
+
+        print!("hello");
+
+
+        Ok(())
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -89,6 +106,7 @@ fn create_db(conn: &Connection, sql_content: String) -> Result<usize> {
     )
 }
 
+
 fn my_movies(conn: &Connection) -> Result<Json<Datas>> {
     let mut stmt = conn
         .prepare("SELECT * FROM Movies")
@@ -118,6 +136,15 @@ fn get_movies(conn: SqliteDbConn) -> Result<Json<Datas>> {
     //println!("{}", movies_json);
 }
 
+
+#[post("/posted", data = "<user_input>")]
+fn post_movies(user_input: Json<Datas>,conn: SqliteDbConn) -> Result<()> {
+    format!("{:?}", user_input);
+    let body = user_input.into_inner();
+
+    Datas::add_movies(&body, &conn)
+}
+
 fn run_migrations(rocket: Rocket) -> std::result::Result<Rocket, Rocket> {
     let sql_file_content = read_sql_from_file("all.sql");
     let conn = SqliteDbConn::get_one(&rocket).expect("db conn");
@@ -133,6 +160,7 @@ fn main() {
         .attach(SqliteDbConn::fairing())
         .attach(AdHoc::on_attach("Migration", run_migrations))
         .mount("/", routes![get_movies])
+        .mount("/api", routes![post_movies])
         //.manage(Mutex::new(db_conn))
         .launch();
 }
