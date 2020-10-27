@@ -1,3 +1,2 @@
-[development]
-databases.SqliteDbConn = { url = "dev.db", pool_size = 20 }
-
+[global.databases]
+SqliteDbConn = { url = "dev.db", pool_size = 20 }
