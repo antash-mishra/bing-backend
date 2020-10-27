@@ -13,13 +13,12 @@ serde_derive = "1.0.117"
 rusqlite = { version = "0.14.0" }
 rocket = "0.4.5"
 env_logger = "0.8.1" 
-libsqlite3-sys = { version = ">=0.8.0, <0.20.2", optional = true, features = ["min_sqlite_version_3_7_16"] }
+lazy_static = "1"
+r2d2_sqlite = "0.6.0"
+r2d2 = "0.8.9"
 
 [dependencies.rocket_contrib]
 version = "0.4.5"
 default-features = false
-features = ["json", "databases", "sqlite_pool"]
-
-[global.databases]
-sqlite_logs = { url = "all.sql" }
+features = ["json", "databases", "sqlite_pool", "serve","tera_templates"]
 

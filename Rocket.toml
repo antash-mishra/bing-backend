@@ -1,0 +1,3 @@
+[development]
+databases.SqliteDbConn = { url = "dev.db", pool_size = 20 }
+
