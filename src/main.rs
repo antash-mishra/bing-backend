@@ -137,7 +137,7 @@ fn get_movies(conn: SqliteDbConn) -> Result<Json<Datas>> {
 }
 
 
-#[post("/posted", data = "<user_input>")]
+#[post("/movies", data = "<user_input>")]
 fn post_movies(user_input: Json<Datas>,conn: SqliteDbConn) -> Result<()> {
     format!("{:?}", user_input);
     let body = user_input.into_inner();
@@ -160,7 +160,7 @@ fn main() {
         .attach(SqliteDbConn::fairing())
         .attach(AdHoc::on_attach("Migration", run_migrations))
         .mount("/", routes![get_movies])
-        .mount("/api", routes![post_movies])
+        .mount("/", routes![post_movies])
         //.manage(Mutex::new(db_conn))
         .launch();
 }
