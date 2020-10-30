@@ -21,4 +21,3 @@ r2d2 = "0.8.9"
 version = "0.4.5"
 default-features = false
 features = ["json", "databases", "sqlite_pool", "serve","tera_templates", "diesel_sqlite_pool"]
-
