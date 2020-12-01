@@ -30,8 +30,8 @@ pub struct Login_datas {
 impl Login_datas {
     pub fn add_user(new: &Login_datas, conn:&Connection) -> Result<()> {
         for k in &new.all_users {
-            conn.execute("INSERT OR REPLACE INTO Login(name, username, email, password) values (?1, ?2, ?3, ?4)", 
-                &[&k.name, &k.username, &k.Email, &k.password]
+            conn.execute("INSERT OR REPLACE INTO Login(name, username, password) values (?1, ?2, ?3)", 
+                &[&k.name, &k.username, &k.password]
             )?;
         }
         Ok(())
@@ -42,8 +42,7 @@ impl Login_datas {
 pub struct Login {
     user_id: i32,
     name: String,
-    username: String,
-    Email: String,
+    username: String,   
     password: String,
 }
 
@@ -57,8 +56,7 @@ pub fn my_users(conn: &Connection) -> Result<Json<Login_datas>> {
             user_id: row.get(0),
             name: row.get(1),
             username: row.get(2),
-            Email: row.get(3),
-            password: row.get(4),
+            password: row.get(3),
         })
         .unwrap()
         .into_iter()
@@ -78,5 +76,4 @@ pub fn post_users(login_inputs: Json<Login_datas>, conn: SqliteDbConn) -> Result
     format!("{:?}", login_inputs);
     let body = login_inputs.into_inner();
     Login_datas::add_user(&body, &conn)
-
-}
+}   
