@@ -58,11 +58,12 @@ const SQL_INIT_WATCHED_DATABASE_MOVIE: &'static str = "CREATE TABLE IF NOT EXIST
     FOREIGN KEY (user_id) REFERENCES Login(user_id)
 )";
 
-const SQL_INIT_WATCHED_DATABASE_SERIES: &'static str = "CREATE TABLE IF NOT EXISTS watched_movie (
+const SQL_INIT_WATCHED_DATABASE_SERIES: &'static str = "CREATE TABLE IF NOT EXISTS watched_series (
     user_id      INTEGER PRIMARY KEY NOT NULL,
     series_id     INTEGER NOT NULL,
     rating       INTEGER,
-    review       TEXT
+    review       TEXT,
+    seasons     INTEGER,
     FOREIGN KEY (series_id) REFERENCES Series(series_id),
     FOREIGN KEY (user_id) REFERENCES Login(user_id)
 )";
