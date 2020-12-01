@@ -45,14 +45,17 @@ const SQL_LOGIN_INIT_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Login 
     user_id      INTEGER PRIMARY KEY AUTOINCREMENT,
     name         TEXT NOT NULL,
     username     TEXT NOT NULL,
-    password     TEXT NOT NULL     
+    password     TEXT NOT NULL,     
+    FOREIGN KEY (user_id) REFERENCES Login(user_id)
 );";
 
 const SQL_INIT_WATCHED_DATABASE_MOVIE: &'static str = "CREATE TABLE IF NOT EXISTS watched_movie (
     user_id      INTEGER PRIMARY KEY NOT NULL,
     movie_id     INTEGER NOT NULL,
     rating       INTEGER,
-    review       TEXT
+    review       TEXT,
+    FOREIGN KEY (movie_id) REFERENCES Movies(movie_id),
+    FOREIGN KEY (user_id) REFERENCES Login(user_id)
 )";
 
 const SQL_INIT_WATCHED_DATABASE_SERIES: &'static str = "CREATE TABLE IF NOT EXISTS watched_movie (
@@ -60,6 +63,8 @@ const SQL_INIT_WATCHED_DATABASE_SERIES: &'static str = "CREATE TABLE IF NOT EXIS
     series_id     INTEGER NOT NULL,
     rating       INTEGER,
     review       TEXT
+    FOREIGN KEY (series_id) REFERENCES Series(series_id),
+    FOREIGN KEY (user_id) REFERENCES Login(user_id)
 )";
 
 pub fn create_db(conn: &mut Connection, sql_content: String) -> Result<usize> {
