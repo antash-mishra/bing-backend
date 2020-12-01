@@ -44,7 +44,9 @@ const SQL_INIT_WATCHLIST_DATABASE_SERIES: &'static str = "CREATE TABLE IF NOT EX
 const SQL_LOGIN_INIT_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Login (
     user_id      INTEGER PRIMARY KEY AUTOINCREMENT,
     name         TEXT NOT NULL,
-    username     TEXT NOT NULL,
+    username     TEXT NOT NULL UNIQUE,
+    email        TEXT NOT NULL,
+    age          INTEGER NOT NULL,
     password     TEXT NOT NULL,     
     FOREIGN KEY (user_id) REFERENCES Login(user_id)
 );";
@@ -52,20 +54,28 @@ const SQL_LOGIN_INIT_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Login 
 const SQL_INIT_WATCHED_DATABASE_MOVIE: &'static str = "CREATE TABLE IF NOT EXISTS watched_movie (
     user_id      INTEGER PRIMARY KEY NOT NULL,
     movie_id     INTEGER NOT NULL,
-    rating       INTEGER,
-    review       TEXT,
+    date         TEXT NOT NULL,     
     FOREIGN KEY (movie_id) REFERENCES Movies(movie_id),
     FOREIGN KEY (user_id) REFERENCES Login(user_id)
 )";
 
-const SQL_INIT_WATCHED_DATABASE_SERIES: &'static str = "CREATE TABLE IF NOT EXISTS watched_movie (
+const SQL_INIT_WATCHED_DATABASE_SERIES: &'static str = "CREATE TABLE IF NOT EXISTS watched_series (
     user_id      INTEGER PRIMARY KEY NOT NULL,
-    series_id     INTEGER NOT NULL,
-    rating       INTEGER,
-    review       TEXT
+    series_id    INTEGER NOT NULL,
     FOREIGN KEY (series_id) REFERENCES Series(series_id),
     FOREIGN KEY (user_id) REFERENCES Login(user_id)
 )";
+
+const SQL_INIT_REVIEW_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Review (
+    user_id      INTEGER NOT NULL,
+    movie_id     INTEGER,
+    series_id    INTEGER,
+    rating       INTEGER,
+    review       TEXT,
+    FOREIGN KEY (series_id) REFERENCES Series(series_id),
+    FOREIGN KEY (user_id) REFERENCES Login(user_id),
+    FOREIGN KEY (movie_id) REFERENCES Movie(movie_id)
+ )"; 
 
 pub fn create_db(conn: &mut Connection, sql_content: String) -> Result<usize> {
 
@@ -88,6 +98,8 @@ pub fn create_db(conn: &mut Connection, sql_content: String) -> Result<usize> {
     tx.execute(SQL_INIT_WATCHED_DATABASE_MOVIE, &[])?;
 
     tx.execute(SQL_INIT_WATCHED_DATABASE_SERIES, &[])?;
+
+    tx.execute(SQL_INIT_REVIEW_DATABASE, &[])?;
 
     tx.commit()?;
 
