@@ -10,11 +10,20 @@ use rusqlite::{Connection, Result};
 
 const  SQL_FOREIGN_KEY: &'static str = "PRAGMA synchronous = OFF";
 
+const SQL_LOGIN_INIT_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS User (
+    username     TEXT PRIMARY KEY,
+    name         TEXT NOT NULL,
+    email        TEXT NOT NULL,
+    age          INTEGER NOT NULL,
+    password     TEXT NOT NULL
+);";
+
 const SQL_INIT_MOVIE_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Movies (
     movie_id     INTEGER PRIMARY KEY AUTOINCREMENT,
     title        TEXT NOT NULL,
     genre        TEXT NOT NULL,
-    imdb_rating  INTEGER
+    imdb_rating  INTEGER NOT NULL,
+    user_rating  DECIMAL(2,2)
 );";
 
 const SQL_INIT_SERIES_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Series (
@@ -23,57 +32,66 @@ const SQL_INIT_SERIES_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Serie
     genre         TEXT NOT NULL,
     season        INTEGER,
     episode       INTEGER,
-    imdb_rating   INTEGER NOT NULL
+    imdb_rating   INTEGER NOT NULL,
+    user_rating   DECIMAL(2,2)
 );";
 
 const SQL_INIT_WATCHLIST_DATABASE_MOVIE: &'static str = "CREATE TABLE IF NOT EXISTS user_watchlist_movie (
-    user_id           INTEGER PRIMARY KEY,
+    username          TEXT NOT NULL,
     movie_id          INTEGER NOT NULL,
+    PRIMARY KEY (username,movie_id),
     FOREIGN KEY (movie_id) REFERENCES Movies(movie_id),
-    FOREIGN KEY (user_id) REFERENCES Login(user_id)
+    FOREIGN KEY (username) REFERENCES User(username)
 );";
 
 const SQL_INIT_WATCHLIST_DATABASE_SERIES: &'static str = "CREATE TABLE IF NOT EXISTS user_watchlist_series (
-    user_id           INTEGER PRIMARY KEY,
+    username          TEXT NOT NULL,
     series_id         INTEGER NOT NULL,
+    PRIMARY KEY (username,series_id),
     FOREIGN KEY (series_id) REFERENCES Series(series_id),
-    FOREIGN KEY (user_id) REFERENCES Login(user_id)
+    FOREIGN KEY (username) REFERENCES User(username)
 );";
 
-
-const SQL_LOGIN_INIT_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Login (
-    user_id      INTEGER PRIMARY KEY AUTOINCREMENT,
-    name         TEXT NOT NULL,
-    username     TEXT NOT NULL UNIQUE,
-    email        TEXT NOT NULL,
-    age          INTEGER NOT NULL,
-    password     TEXT NOT NULL,     
-    FOREIGN KEY (user_id) REFERENCES Login(user_id)
-);";
 
 const SQL_INIT_WATCHED_DATABASE_MOVIE: &'static str = "CREATE TABLE IF NOT EXISTS watched_movie (
-    user_id      INTEGER PRIMARY KEY NOT NULL,
+    username     TEXT NOT NULL,
     movie_id     INTEGER NOT NULL,
-    date         TEXT NOT NULL,     
+    date         TEXT NOT NULL,
+    PRIMARY KEY (username,movie_id),
     FOREIGN KEY (movie_id) REFERENCES Movies(movie_id),
-    FOREIGN KEY (user_id) REFERENCES Login(user_id)
+    FOREIGN KEY (username) REFERENCES User(username)
 )";
 
 const SQL_INIT_WATCHED_DATABASE_SERIES: &'static str = "CREATE TABLE IF NOT EXISTS watched_series (
-    user_id      INTEGER PRIMARY KEY NOT NULL,
+    username     TEXT NOT NULL,
     series_id    INTEGER NOT NULL,
+    date         TEXT,
+    season       INTEGER,
+    PRIMARY KEY (username,series_id),
     FOREIGN KEY (series_id) REFERENCES Series(series_id),
-    FOREIGN KEY (user_id) REFERENCES Login(user_id)
+    FOREIGN KEY (username) REFERENCES User(username)
 )";
 
-const SQL_INIT_REVIEW_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Review (
-    user_id      INTEGER NOT NULL,
+const SQL_INIT_REVIEW_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Review_Movies (
+    username     TEXT NOT NULL,
     movie_id     INTEGER,
-    series_id    INTEGER,
     rating       INTEGER,
     review       TEXT,
-    FOREIGN KEY (series_id) REFERENCES Series(series_id),
-    FOREIGN KEY (user_id) REFERENCES Login(user_id),
+    revmov_id    INTEGER AUTOINCREMENT,
+    PRIMARY KEY (username,movie_id,revmov_id),
+    FOREIGN KEY (username) REFERENCES User(username),
+    FOREIGN KEY (movie_id) REFERENCES Movie(movie_id)
+ )"; 
+
+const SQL_INIT_REVIEW_DATABASE: &'static str = "CREATE TABLE IF NOT EXISTS Review_Series (
+    username     TEXT NOT NULL,
+    series_id    INTEGER,
+    revser_id    INTEGER AUTOINCREMENT,
+    season       INTEGER,
+    rating       INTEGER,
+    review       TEXT,
+    PRIMARY KEY (username,movie_id,revser_id),
+    FOREIGN KEY (username) REFERENCES User(username),
     FOREIGN KEY (movie_id) REFERENCES Movie(movie_id)
  )"; 
 
