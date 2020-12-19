@@ -14,11 +14,16 @@ serde_derive = "1.0.117"
 rocket = "0.4.5"
 lazy_static = "1"
 r2d2 = "0.8.9"
+<<<<<<< HEAD
 r2d2_mysql = "16.0"
 reqwest = {version = "0.10.8", features = ["blocking", "json"]}
 mysql = "*"
 env_logger = "0.5.2"
 
+=======
+rocket_cors = "0.5.2"
+reqwest = {version = "0.10.8", features = ["blocking", "json"]}
+>>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
 
 [dependencies.rocket_contrib]
 version = "0.4.6"
