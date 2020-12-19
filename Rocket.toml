@@ -1,2 +1,2 @@
 [global.databases]
-SqliteDbConn = { url = "dev.db", pool_size = 20 }
+mysql_logs = { url = "mysql://root:padmamishra@localhost:3307/dev", pool_size = 20 }
