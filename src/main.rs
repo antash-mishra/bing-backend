@@ -9,10 +9,7 @@ extern crate serde_derive;
 extern crate serde_json;
 #[macro_use]
 extern crate lazy_static;
-<<<<<<< HEAD
-=======
 extern crate rocket_cors;
->>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
 extern crate reqwest;
 
 mod restdatabase;
@@ -37,18 +34,12 @@ use serde::Serialize;
 use serde::de::{self, Deserialize, Deserializer, Visitor, SeqAccess, MapAccess};
 use reqwest::get;
 
-<<<<<<< HEAD
 #[database("mysql_logs")]
 struct MysqlDbConn(mysql::Conn);
-=======
-#[database("SqliteDbConn")]
-pub struct SqliteDbConn(Connection);
->>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Movies {
     movie_id: f64,
-<<<<<<< HEAD
     title: String,
     genre: String,
     imdb_rating: f64,
@@ -61,8 +52,6 @@ struct AllMovies {
 #[derive(Debug, Serialize, Deserialize)]
 struct Series {
     series_id: f64,
-=======
->>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
     title: String,
     genre: String,
     season: f64,
@@ -70,7 +59,6 @@ struct Series {
     imdb_rating: f64,
 }
 #[derive(Debug, Serialize, Deserialize)]
-<<<<<<< HEAD
 struct AllSeries {
     series: Vec<Series>,
 }
@@ -114,102 +102,21 @@ impl user_watchlist {
         for j in &new.all_watchlist {
             connection.execute("INSERT OR REPLACE INTO user_watchlist(type, movie_id, series_id) values(?1, ?2, ?3)", 
             &[&j.types,  &j.movie_id, &j.series_id],
-=======
-struct AllMovies {
-    movies: Vec<Movies>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Series {
-    series_id: f64,
-    title: String,
-    genre: String,
-    season: f64,
-    episode: f64,
-    imdb_rating: f64,
-}
-#[derive(Debug, Serialize, Deserialize)]
-struct AllSeries {
-    series: Vec<Series>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct AddToWatchlistMovie {
-    user_id: f64,
-    movie_id: f64,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct AddToWatchlistSeries {
-    user_id: f64,
-    series_id: f64,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct user_watchlist_movie {
-    all_watchlist: Vec<AddToWatchlistMovie>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct user_watchlist_series {
-    all_watchlist: Vec<AddToWatchlistSeries>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct SearchQueries {
-    Query: String,
-}
-
-
-impl user_watchlist_movie {
-    pub fn add_watchlist(new: &user_watchlist_movie, conn: &Connection) -> Result<()> {
-
-        for j in &new.all_watchlist {
-            conn.execute("INSERT OR REPLACE INTO user_watchlist_movie(user_id, movie_id) values(?1, ?2)", 
-            &[&j.user_id,  &j.movie_id],
->>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
             )?;
         }
 
         print!("hello");
 
-<<<<<<< HEAD
-=======
-        Ok(())
-    }
-}
-
-impl user_watchlist_series {
-    pub fn add_watchlist(new: &user_watchlist_series, conn: &Connection) -> Result<()> {
-
-        for j in &new.all_watchlist {
-            conn.execute("INSERT OR REPLACE INTO user_watchlist_series(user_id, series_id) values(?1, ?2)", 
-            &[&j.user_id,  &j.series_id],
-            )?;
-        }
-
-        print!("hello");
-
->>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
         Ok(())
     }
 }
 
 impl SearchQueries {
-<<<<<<< HEAD
     pub fn query_search(&self, connection: &Connection) -> Result<()> {
         let mut search_results: Vec<Movies> = Vec::new();
         let mut body = String::new();
         let mut sites = "https://api.themoviedb.org/3/search/movie?api_key=3718fa836f765b876b4a98393770dcd4&language=en-US&query="
         .to_owned() + &self.Query;
-=======
-    pub fn query_search(&self, conn: &Connection) -> Result<()> {
-        let mut search_results: Vec<Movies> = Vec::new();
-        let mut body = String::new();
-        let sites = "
-            https://api.themoviedb.org/3/search/movie?api_key=3718fa836f765b876b4a98393770dcd4&language=en-US&query="
-            .to_owned() + &self.Query;
->>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
         let json_body = reqwest::blocking::get(&sites).unwrap().read_to_string(&mut body); 
         let datas = serde_json::from_str::<AllMovies>(&body).unwrap();
         println!("{:?}", datas);
@@ -226,7 +133,6 @@ fn read_sql_from_file(path: &str) -> String {
     contents
 }
 
-<<<<<<< HEAD
 fn get_user_watchlist(connection: &Connection) -> Result<Json<user_watchlist>> {
     let mut stmt = connection
         .prepare("SELECT * FROM user_watchlist")
@@ -286,12 +192,6 @@ fn request_movies(connection: &Conn, all_movies: Vec<Movies>) -> Result<()> {
 //    //let movies_json = serde_json::to_string(&movies_iter).unwrap();
 //    //println!("{}", movies_json);
 //}
-=======
-fn get_user_watchlist_movie(conn: &Connection) -> Result<Json<user_watchlist_movie>> {
-    let mut stmt = conn
-        .prepare("SELECT * FROM user_watchlist")
-        .expect("Not found");
->>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
 
     let mut all_watchlist = stmt
         .query_map(&[], |row| AddToWatchlistMovie {
@@ -307,7 +207,6 @@ fn get_user_watchlist_movie(conn: &Connection) -> Result<Json<user_watchlist_mov
 
 }
 
-<<<<<<< HEAD
 //#[post("/movies", data = "<user_input>")]
 //fn post_movies(user_input: Json<Datas>,conn: SqliteDbConn) -> Result<()> {
 //    format!("{:?}", user_input);
@@ -335,7 +234,6 @@ fn add_to_watchlist(user_input: Json<user_watchlist>, conn: MysqlDbConn) -> Resu
 
 #[post("/add_to_list", data = "<user_input>")]
 fn user_query(user_input: Json<SearchQueries>, conn: Conn) -> std::result::Result<(), mysql::Error> {
-=======
 fn get_user_watchlist_series(conn: &Connection) -> Result<Json<user_watchlist_series>> {
     let mut stmt = conn
         .prepare("SELECT * FROM user_watchlist")
@@ -438,7 +336,6 @@ fn add_to_watchlist_series(user_input: Json<user_watchlist_series>, conn: Sqlite
 #[post("/add_to", data = "<user_input>")]
 fn user_query(user_input: Json<SearchQueries>, conn: SqliteDbConn) -> std::result::Result<(), rusqlite::Error> {
     
->>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
     format!("{:?}", user_input);
 
     let query_data = user_input.into_inner();
@@ -448,16 +345,11 @@ fn user_query(user_input: Json<SearchQueries>, conn: SqliteDbConn) -> std::resul
 
 fn run_migrations(rocket: Rocket) -> std::result::Result<Rocket, Error> {
     let sql_file_content = read_sql_from_file("all.sql");
-<<<<<<< HEAD
     let url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = Pool::new(url)?;
     let mut conn = pool.get_conn()?;
     let connection = MysqlDbConn::get_one(&rocket).expect("db conn");
     restdatabase::create_db(conn, sql_file_content).expect("as");
-=======
-    let mut conn = SqliteDbConn::get_one(&rocket).expect("db conn");
-    restdatabase::create_db(&mut conn, sql_file_content).expect("as");
->>>>>>> 8f8e201b3c381086f89b56bd56795ac47f30c4de
     println!("done migr");
     Ok(rocket)
 }
